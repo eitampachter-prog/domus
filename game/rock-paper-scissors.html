@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Domus – הכרעה במשחק</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --indigo: #3D2FB0;
+    --indigo-soft: #ECEAFB;
+    --mint: #2EC4A0;
+    --mint-soft: #E3F8F2;
+    --coral: #FF6B5B;
+    --coral-soft: #FFECEA;
+    --amber: #FFB020;
+    --amber-soft: #FFF4DE;
+    --ink: #1B1A2E;
+    --muted: #6B6A80;
+    --line: #E4E3EE;
+    --surface: #FFFFFF;
+    --bg: #F6F5FC;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font-family: "Rubik", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .phone {
+    width: 100%;
+    max-width: 420px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header.bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  header.bar h1 { font-size: 18px; font-weight: 600; margin: 0; flex: 1; }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: none; background: var(--bg); font-size: 18px; cursor: pointer;
+  }
+  main { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  .screen { display: none; flex-direction: column; gap: 16px; animation: fade .25s ease; }
+  .screen.active { display: flex; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: 0 2px 10px rgba(61, 47, 176, .06);
+  }
+  .card h2 { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
+  .card p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--muted); }
+  .task-title { font-size: 18px; font-weight: 700; margin: 4px 0 8px; }
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+  }
+  .chip.amber { background: var(--amber-soft); color: #8A5A00; }
+  .chip.mint { background: var(--mint-soft); color: #0E7A60; }
+  .chip.indigo { background: var(--indigo-soft); color: var(--indigo); }
+  .chip.coral { background: var(--coral-soft); color: #B23A2D; }
+  .chip.grey { background: var(--bg); color: var(--muted); }
+
+  .views { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .view {
+    border: 1px solid var(--line); border-radius: 16px; padding: 12px;
+    font-size: 13px; line-height: 1.5;
+  }
+  .view strong { display: block; font-size: 14px; margin-bottom: 4px; }
+
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #fff; flex: none;
+  }
+  .avatar.noa { background: var(--indigo); }
+  .avatar.itay { background: var(--mint); }
+
+  .consent {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border: 1px solid var(--line); border-radius: 16px;
+  }
+  .consent .who { flex: 1; font-size: 14px; font-weight: 500; }
+
+  ul.rules { margin: 0; padding: 0 18px 0 0; font-size: 14px; line-height: 1.8; color: var(--muted); }
+
+  .btn {
+    width: 100%; border: none; border-radius: 16px;
+    padding: 14px 16px; font: inherit; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: transform .1s ease, opacity .2s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn.primary { background: var(--indigo); color: #fff; }
+  .btn.secondary { background: var(--surface); color: var(--indigo); border: 1.5px solid var(--indigo); }
+  .btn.small { width: auto; padding: 8px 14px; font-size: 14px; border-radius: 12px; }
+  .btn.mint { background: var(--mint); color: #fff; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  .score {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface); border-radius: var(--radius); padding: 12px 16px;
+  }
+  .score .side { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .score .pts { font-size: 28px; font-weight: 800; color: var(--indigo); }
+  .score .mid { text-align: center; font-size: 12px; color: var(--muted); }
+  .dots { display: flex; gap: 4px; justify-content: center; margin-top: 4px; }
+  .dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .dots span.noa { background: var(--indigo); }
+  .dots span.itay { background: var(--mint); }
+  .dots span.tie { background: var(--amber); }
+
+  .turn-banner { text-align: center; padding: 8px 0; }
+  .turn-banner .big { font-size: 22px; font-weight: 700; margin: 8px 0 4px; }
+  .turn-banner p { margin: 0; font-size: 14px; color: var(--muted); }
+
+  .moves { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .move {
+    background: var(--surface); border: 2px solid transparent; border-radius: var(--radius);
+    padding: 18px 8px; cursor: pointer; font: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    box-shadow: 0 2px 10px rgba(61, 47, 176, .06);
+    transition: transform .12s ease, border-color .12s;
+  }
+  .move:hover { border-color: var(--indigo-soft); }
+  .move:active { transform: scale(.95); }
+  .move .emoji { font-size: 44px; line-height: 1; }
+  .move .label { font-size: 15px; font-weight: 600; }
+
+  .locked { text-align: center; padding: 28px 16px; }
+  .locked .lock { font-size: 56px; }
+  .locked .big { font-size: 20px; font-weight: 700; margin: 12px 0 6px; }
+  .fingerprint {
+    font-family: ui-monospace, Consolas, monospace; font-size: 12px; direction: ltr;
+    background: var(--bg); border-radius: 10px; padding: 6px 10px; display: inline-block; margin-top: 10px;
+    color: var(--muted);
+  }
+
+  .arena { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; text-align: center; }
+  .hand { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .hand .emoji { font-size: 64px; line-height: 1; }
+  .hand .emoji.shake { animation: shake .35s ease-in-out 3; }
+  @keyframes shake { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+  .hand .name { font-weight: 600; font-size: 14px; }
+  .vs { font-weight: 800; color: var(--muted); }
+  .countdown { text-align: center; font-size: 22px; font-weight: 700; color: var(--indigo); min-height: 32px; }
+  .round-result { text-align: center; }
+
+  .result-hero { text-align: center; padding: 24px 16px; }
+  .result-hero .emoji { font-size: 60px; }
+  .result-hero .big { font-size: 22px; font-weight: 800; margin: 12px 0 8px; }
+  .balance {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 26px; font-weight: 800; margin-top: 12px;
+  }
+  .balance .from { color: var(--muted); text-decoration: line-through; font-weight: 600; font-size: 20px; }
+  .balance .to { color: var(--mint); }
+  .note { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <header class="bar">
+    <button class="icon-btn" aria-label="חזרה" onclick="go('intro')">→</button>
+    <h1>הכרעה במשחק</h1>
+    <span class="chip amber" id="status-chip">⏳ ממתינה להכרעה</span>
+  </header>
+
+  <main>
+    <!-- 1. מחלוקת והסכמה -->
+    <section class="screen active" id="intro">
+      <div class="card">
+        <span class="chip amber">⚖️ חוסר הסכמה על הביצוע</span>
+        <div class="task-title">ניקוי יסודי של האמבטיה</div>
+        <div class="row">
+          <span class="chip indigo">🧽 ניקיון · מורכבות גבוהה</span>
+          <span class="chip mint">⭐ 35 נק׳</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>שתי נקודות מבט</h2>
+        <div class="views">
+          <div class="view"><strong>נועה (פרסמה)</strong>לדעתה, האזור סביב המקלחון עוד צריך השלמה.</div>
+          <div class="view"><strong>איתי (לקח)</strong>לדעתו, המטלה הושלמה כפי שסוכם.</div>
+        </div>
+        <p style="margin-top:12px">שתי הדעות לגיטימיות. אפשר להכריע במשחק קצר ומהיר, או להעביר את המטלה לתור הבדיקה של חבר/ת בית אחר/ת.</p>
+      </div>
+
+      <div class="card">
+        <h2>כללי המשחק</h2>
+        <ul class="rules">
+          <li>אבן, נייר ומספריים, הטוב מ־3 (הראשון שמגיע ל־2 ניצחונות).</li>
+          <li>תיקו לא נספר, ומשחקים סיבוב נוסף.</li>
+          <li>כל בחירה ננעלת לפני שהצד השני בוחר, כך שאי אפשר להציץ או לשנות.</li>
+          <li>ניצחון של איתי: המטלה מאושרת והנקודות נזקפות.</li>
+          <li>ניצחון של נועה: המטלה חוזרת להשלמה קצרה, בלי הורדת נקודות.</li>
+          <li>התוצאה סופית. משחק אחד בלבד לכל מטלה.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>שני הצדדים צריכים להסכים</h2>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <div class="consent">
+            <span class="avatar noa">נ</span>
+            <span class="who">נועה</span>
+            <button class="btn secondary small" id="consent-noa" onclick="consent('noa')">אני מסכימה</button>
+          </div>
+          <div class="consent">
+            <span class="avatar itay">א</span>
+            <span class="who">איתי</span>
+            <button class="btn secondary small" id="consent-itay" onclick="consent('itay')">אני מסכים</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn primary" id="start-btn" disabled onclick="startMatch()">✊ מתחילים לשחק</button>
+      <button class="btn secondary" onclick="go('review')">📋 העברה לתור הבדיקה במקום</button>
+    </section>
+
+    <!-- 2. בחירת מהלך -->
+    <section class="screen" id="pick">
+      <div class="score" id="score-pick"></div>
+      <div class="turn-banner">
+        <span class="avatar" id="pick-avatar"></span>
+        <div class="big" id="pick-title"></div>
+        <p id="pick-sub"></p>
+      </div>
+      <div class="moves">
+        <button class="move" onclick="choose('rock')"><span class="emoji">✊</span><span class="label">אבן</span></button>
+        <button class="move" onclick="choose('paper')"><span class="emoji">✋</span><span class="label">נייר</span></button>
+        <button class="move" onclick="choose('scissors')"><span class="emoji">✌️</span><span class="label">מספריים</span></button>
+      </div>
+      <p class="note">הבחירה מוסתרת וננעלת מיד. מומלץ לא לתת לצד השני להציץ במסך.</p>
+    </section>
+
+    <!-- 3. בחירה ננעלה, העברת המכשיר -->
+    <section class="screen" id="locked">
+      <div class="card locked">
+        <div class="lock">🔒</div>
+        <div class="big">הבחירה של נועה ננעלה</div>
+        <p>עכשיו מעבירים את הטלפון לאיתי.</p>
+        <div class="fingerprint" id="fingerprint"></div>
+      </div>
+      <button class="btn primary" onclick="itayTurn()">אני איתי, אפשר להמשיך</button>
+      <p class="note">טביעת האצבע היא גיבוב (hash) של הבחירה ושל מחרוזת אקראית. בסוף הסיבוב בודקים שהבחירה שנחשפה תואמת לה, כך שאיש לא יכול לשנות בחירה בדיעבד.</p>
+    </section>
+
+    <!-- 4. חשיפה -->
+    <section class="screen" id="reveal">
+      <div class="score" id="score-reveal"></div>
+      <div class="card">
+        <div class="countdown" id="countdown"></div>
+        <div class="arena">
+          <div class="hand"><span class="emoji" id="hand-noa">✊</span><span class="name">נועה</span></div>
+          <span class="vs">VS</span>
+          <div class="hand"><span class="emoji" id="hand-itay">✊</span><span class="name">איתי</span></div>
+        </div>
+      </div>
+      <div class="round-result" id="round-result"></div>
+      <button class="btn primary" id="next-btn" style="display:none" onclick="nextRound()"></button>
+    </section>
+
+    <!-- 5. תוצאה -->
+    <section class="screen" id="result">
+      <div class="card result-hero" id="result-hero"></div>
+      <div class="card" id="result-log"></div>
+      <button class="btn primary" onclick="resetAll()">חזרה למטלה</button>
+      <p class="note">אב־טיפוס להדגמה: הלחיצה מאפסת את המשחק.</p>
+    </section>
+
+    <!-- חלופה: תור בדיקה -->
+    <section class="screen" id="review">
+      <div class="card result-hero">
+        <div class="emoji">📋</div>
+        <div class="big">המטלה הועברה לתור הבדיקה</div>
+        <p>מאיה (חברת בית שלא מעורבת במחלוקת) או מנהל/ת הבית יבדקו את תמונות ה־Before וה־After ויכריעו.</p>
+        <div class="row" style="justify-content:center; margin-top:12px">
+          <span class="chip amber">⏳ Needs Review</span>
+        </div>
+      </div>
+      <button class="btn secondary" onclick="go('intro')">חזרה</button>
+    </section>
+  </main>
+</div>
+
+<script>
+  const MOVES = {
+    rock:     { emoji: '✊', label: 'אבן',     beats: 'scissors', verb: 'מנצחת' },
+    paper:    { emoji: '✋', label: 'נייר',    beats: 'rock',     verb: 'מנצח' },
+    scissors: { emoji: '✌️', label: 'מספריים', beats: 'paper',    verb: 'מנצחים' }
+  };
+  const PLAYERS = {
+    noa:  { name: 'נועה', initial: 'נ', cls: 'noa',  takes: 'לוקחת' },
+    itay: { name: 'איתי', initial: 'א', cls: 'itay', takes: 'לוקח' }
+  };
+  const WINS_NEEDED = 2;
+  const TASK_POINTS = 35;
+  const ITAY_BALANCE = 95;
+
+  let state;
+  function freshState() {
+    return { consent: { noa: false, itay: false }, wins: { noa: 0, itay: 0 }, rounds: [], commit: null, turn: 'noa' };
+  }
+  state = freshState();
+
+  function go(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+    window.scrollTo(0, 0);
+  }
+
+  function consent(who) {
+    state.consent[who] = true;
+    const btn = document.getElementById('consent-' + who);
+    btn.textContent = '✓ הסכמה התקבלה';
+    btn.disabled = true;
+    document.getElementById('start-btn').disabled = !(state.consent.noa && state.consent.itay);
+  }
+
+  function startMatch() {
+    state.wins = { noa: 0, itay: 0 };
+    state.rounds = [];
+    noaTurn();
+  }
+
+  function renderScore(elId) {
+    const dots = state.rounds.map(r => `<span class="${r.winner || 'tie'}"></span>`).join('');
+    document.getElementById(elId).innerHTML = `
+      <div class="side"><span class="avatar noa">נ</span>נועה <span class="pts">${state.wins.noa}</span></div>
+      <div class="mid">סיבוב ${state.rounds.length + 1}<div class="dots">${dots}</div></div>
+      <div class="side"><span class="pts">${state.wins.itay}</span>איתי <span class="avatar itay">א</span></div>`;
+  }
+
+  function setTurn(who) {
+    state.turn = who;
+    const p = PLAYERS[who];
+    const av = document.getElementById('pick-avatar');
+    av.className = 'avatar ' + p.cls;
+    av.textContent = p.initial;
+    document.getElementById('pick-title').textContent = `התור של ${p.name}`;
+    document.getElementById('pick-sub').textContent = who === 'noa'
+      ? 'בחרי מהלך. איתי לא רואה את הבחירה.'
+      : 'בחר מהלך. הבחירה של נועה כבר ננעלה.';
+    renderScore('score-pick');
+    go('pick');
+  }
+
+  function noaTurn() { setTurn('noa'); }
+  function itayTurn() { setTurn('itay'); }
+
+  // Commit-reveal: hash(move + random salt). The fingerprint is shown before the other side picks
+  // and checked again at reveal, so a locked choice cannot be swapped.
+  async function sha256(text) {
+    if (window.crypto && crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    let h = 0;
+    for (const c of text) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return h.toString(16).padStart(8, '0');
+  }
+  function randomSalt() {
+    const a = new Uint8Array(16);
+    crypto.getRandomValues(a);
+    return [...a].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function choose(move) {
+    if (state.turn === 'noa') {
+      const salt = randomSalt();
+      const hash = await sha256(move + ':' + salt);
+      state.commit = { move, salt, hash };
+      document.getElementById('fingerprint').textContent = 'טביעת אצבע: ' + hash.slice(0, 16) + '…';
+      go('locked');
+    } else {
+      reveal(move);
+    }
+  }
+
+  async function reveal(itayMove) {
+    const { move: noaMove, salt, hash } = state.commit;
+    const verified = (await sha256(noaMove + ':' + salt)) === hash;
+    state.commit = null;
+
+    renderScore('score-reveal');
+    const handNoa = document.getElementById('hand-noa');
+    const handItay = document.getElementById('hand-itay');
+    const cd = document.getElementById('countdown');
+    const res = document.getElementById('round-result');
+    const next = document.getElementById('next-btn');
+    handNoa.textContent = '✊'; handItay.textContent = '✊';
+    res.innerHTML = ''; next.style.display = 'none';
+    go('reveal');
+
+    [handNoa, handItay].forEach(h => { h.classList.remove('shake'); void h.offsetWidth; h.classList.add('shake'); });
+    const words = ['אבן…', 'נייר…', 'מספריים!'];
+    for (let i = 0; i < words.length; i++) {
+      cd.textContent = words[i];
+      await new Promise(r => setTimeout(r, 350));
+    }
+    handNoa.textContent = MOVES[noaMove].emoji;
+    handItay.textContent = MOVES[itayMove].emoji;
+
+    let winner = null;
+    if (MOVES[noaMove].beats === itayMove) winner = 'noa';
+    else if (MOVES[itayMove].beats === noaMove) winner = 'itay';
+    state.rounds.push({ noa: noaMove, itay: itayMove, winner });
+    if (winner) state.wins[winner]++;
+
+    const check = verified
+      ? '<span class="chip mint">🔐 הבחירה של נועה אומתה מול טביעת האצבע</span>'
+      : '<span class="chip coral">⚠️ האימות נכשל, הסיבוב בוטל</span>';
+    if (winner) {
+      const w = PLAYERS[winner];
+      const wm = MOVES[state.rounds.at(-1)[winner]];
+      const lm = MOVES[state.rounds.at(-1)[winner === 'noa' ? 'itay' : 'noa']];
+      cd.textContent = `${w.name} ${w.takes} את הסיבוב`;
+      res.innerHTML = `<div class="row" style="justify-content:center">
+        <span class="chip ${winner === 'noa' ? 'indigo' : 'mint'}">🏅 ${wm.label} ${wm.verb} ${lm.label}</span>${check}</div>`;
+    } else {
+      cd.textContent = 'תיקו!';
+      res.innerHTML = `<div class="row" style="justify-content:center">
+        <span class="chip amber">🤝 שניכם בחרתם ${MOVES[noaMove].label}, הסיבוב לא נספר</span>${check}</div>`;
+    }
+
+    const over = state.wins.noa >= WINS_NEEDED || state.wins.itay >= WINS_NEEDED;
+    renderScore('score-reveal');
+    next.textContent = over ? 'לתוצאה הסופית' : 'לסיבוב הבא (מתחילה נועה)';
+    next.style.display = 'block';
+  }
+
+  function nextRound() {
+    if (state.wins.noa >= WINS_NEEDED || state.wins.itay >= WINS_NEEDED) showResult();
+    else noaTurn();
+  }
+
+  function showResult() {
+    const itayWon = state.wins.itay >= WINS_NEEDED;
+    const hero = document.getElementById('result-hero');
+    if (itayWon) {
+      hero.innerHTML = `
+        <div class="emoji">🎉</div>
+        <div class="big">המטלה אושרה</div>
+        <p>איתי ניצח ${state.wins.itay}–${state.wins.noa}. הנקודות נזקפו לחשבונו.</p>
+        <div class="row" style="justify-content:center; margin-top:12px">
+          <span class="chip mint">✅ Completed</span><span class="chip mint">⭐ +${TASK_POINTS} נק׳</span>
+        </div>
+        <div class="balance"><span class="from">${ITAY_BALANCE}</span><span>←</span><span class="to">${ITAY_BALANCE + TASK_POINTS}</span></div>`;
+    } else {
+      hero.innerHTML = `
+        <div class="emoji">🧽</div>
+        <div class="big">המטלה חוזרת להשלמה קצרה</div>
+        <p>נועה ניצחה ${state.wins.noa}–${state.wins.itay}. איתי משלים את האזור סביב המקלחון ומצלם After חדש. הנקודות שמורות למטלה, ואף נקודה לא יורדת.</p>
+        <div class="row" style="justify-content:center; margin-top:12px">
+          <span class="chip amber">📸 ממתינה ל־After חדש</span><span class="chip grey">⭐ 35 נק׳ שמורות</span>
+        </div>`;
+    }
+    const lines = state.rounds.map((r, i) => {
+      const who = r.winner ? PLAYERS[r.winner].name : 'תיקו';
+      return `<div class="row" style="justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:14px">
+        <span>סיבוב ${i + 1}</span><span>${MOVES[r.noa].emoji} מול ${MOVES[r.itay].emoji}</span><span>${who}</span></div>`;
+    }).join('');
+    setStatus('mint', '✅ הוכרע במשחק');
+    document.getElementById('result-log').innerHTML = `<h2>מהלך המשחק</h2>${lines}
+      <p class="note" style="margin-top:10px">התוצאה נרשמת בפעילות הבית כ"הוכרע במשחק", בלי לסמן מי צדק.</p>`;
+    go('result');
+  }
+
+  function setStatus(color, text) {
+    const chip = document.getElementById('status-chip');
+    chip.className = 'chip ' + color;
+    chip.textContent = text;
+  }
+
+  function resetAll() {
+    state = freshState();
+    setStatus('amber', '⏳ ממתינה להכרעה');
+    ['noa', 'itay'].forEach(w => {
+      const b = document.getElementById('consent-' + w);
+      b.disabled = false;
+      b.textContent = w === 'noa' ? 'אני מסכימה' : 'אני מסכים';
+    });
+    document.getElementById('start-btn').disabled = true;
+    go('intro');
+  }
+</script>
+</body>
+</html>

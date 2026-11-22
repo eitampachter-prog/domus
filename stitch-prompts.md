@@ -2,7 +2,7 @@
 
 Stitch project: "Domus – אב טיפוס" (`projects/11405005407106127418`), design system "Domus Cyber-Home".
 Every prompt assumes Hebrew, full RTL (`dir="rtl"`), the Rubik font, and the design system's colors.
-Status: ✅ = in the project, ⏳ = not created yet.
+Status: ✅ = in the project, ⏳ = not created yet. Screens 23–25 cover the dispute-resolution game.
 
 ## Main flow
 
@@ -72,3 +72,16 @@ Domus app – Camera permission denied state. Hebrew, fully RTL (dir="rtl"). Ill
 
 ### 22 Task already claimed ⏳
 Domus app – Task already claimed state. Hebrew, fully RTL (dir="rtl"). Task details of "קניות שבועיות בסופר" ⚡25 in background, with a bottom sheet: avatar of מאיה, title "מאיה הקדימה אותך! 🏃‍♀️", body "המשימה נלקחה לפני רגע. יש עוד משימות פתוחות שמחכות לך", chip "👤 נלקחה ע״י מאיה". Buttons "למשימות פתוחות אחרות", "סגירה".
+
+## Dispute resolution game
+
+A working HTML prototype of this flow is in `game/rock-paper-scissors.html`.
+
+### 23 Settle by game: consent ⏳
+Domus app – Settle a disagreement with a game. Hebrew, fully RTL (dir="rtl"). Title "הכרעה במשחק", amber chip "⚖️ חוסר הסכמה על הביצוע". Task card "ניקוי יסודי של האמבטיה" with chips "🧽 ניקיון · מורכבות גבוהה" and "⭐ 35 נק׳". Card "שתי נקודות מבט": "נועה (פרסמה): לדעתה, האזור סביב המקלחון עוד צריך השלמה" and "איתי (לקח): לדעתו, המטלה הושלמה כפי שסוכם". Rules card: "הטוב מ־3", "תיקו לא נספר", "כל בחירה ננעלת לפני שהצד השני בוחר", "ניצחון של איתי: המטלה מאושרת", "ניצחון של נועה: השלמה קצרה, בלי הורדת נקודות". Consent rows for נועה and איתי with "אני מסכים/ה" buttons. Buttons "✊ מתחילים לשחק" (disabled until both agree), "📋 העברה לתור הבדיקה במקום". Neutral, non-judgmental tone.
+
+### 24 Settle by game: pick and reveal ⏳
+Domus app – Rock-paper-scissors round. Hebrew, fully RTL (dir="rtl"). Scoreboard "נועה 1 · סיבוב 2 · איתי 0" with round dots in indigo and mint. Banner "התור של איתי" with avatar. Three large rounded cards: "✊ אבן", "✋ נייר", "✌️ מספריים". Note "הבחירה מוסתרת וננעלת מיד". Inset: the reveal state with both hands "✋ VS ✊", text "איתי לוקח את הסיבוב", chips "🏅 נייר מנצח אבן" and "🔐 הבחירה של נועה אומתה".
+
+### 25 Settle by game: result ⏳
+Domus app – Game result. Hebrew, fully RTL (dir="rtl"). Confetti, title "המטלה אושרה", body "איתי ניצח 2–1. הנקודות נזקפו לחשבונו", chips "✅ Completed" and "⭐ +35 נק׳", balance "95 ← 130" in mint. Card "מהלך המשחק" listing the rounds. Note "התוצאה נרשמת בפעילות הבית כ'הוכרע במשחק', בלי לסמן מי צדק". Button "חזרה למטלה".
