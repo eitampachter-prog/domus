@@ -8,6 +8,16 @@ Domus is an academic product project: a mobile app for roommates that documents 
 
 This folder has no code. The deliverable is a **Google Stitch prototype**, built through the Stitch MCP server (`mcp__stitch__*`).
 
+## Repository
+
+- GitHub: `eitampachter-prog/domus` (public).
+- Files: `spec.md` (the full Hebrew spec), `stitch-prompts.md` (prompts for all 22 screens), and this file.
+- Branches:
+  - `main` holds the stable, submitted version.
+  - `dev` is for ongoing work.
+  - Commit to `dev`, and merge `dev` into `main` only when a version is ready.
+- The repository is public, so personal details, tokens and `.claude/settings.local.json` (excluded in `.gitignore`) must not be committed.
+
 ## Stitch project
 
 - Project: `projects/11405005407106127418`, titled "Domus – אב טיפוס"
